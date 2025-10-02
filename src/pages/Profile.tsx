@@ -27,12 +27,26 @@ const Profile = () => {
     }
     setUser(user);
 
-    const { data: profile } = await (supabase as any)
+    // Try to load profile; if missing, create a default one for this user
+    let { data: profile, error } = await (supabase as any)
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle();
-    
+
+    if (!profile && !error) {
+      const fullName = (user as any)?.user_metadata?.full_name || null;
+      const preferredLanguage = (document?.documentElement?.lang || 'en');
+      const { data: inserted, error: insertError } = await (supabase as any)
+        .from('profiles')
+        .insert({ id: user.id, full_name: fullName, preferred_language: preferredLanguage })
+        .select('*')
+        .maybeSingle();
+      if (!insertError) {
+        profile = inserted;
+      }
+    }
+
     setProfile(profile);
   };
 

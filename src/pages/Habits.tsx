@@ -13,9 +13,9 @@ import LanguageToggle from '@/components/LanguageToggle';
 
 type Habit = {
   id: string;
-  title: string;
-  icon: string;
-  current_streak: number;
+  name: string;
+  icon: string | null;
+  streak_count: number | null;
   best_streak: number;
 };
 
@@ -48,7 +48,7 @@ const Habits = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setHabits(data || []);
+      setHabits((data as Habit[]) || []);
     } catch (error: any) {
       toast.error('Failed to load habits');
     } finally {
@@ -65,7 +65,7 @@ const Habits = () => {
 
       const { error } = await (supabase as any).from('habits').insert({
         user_id: user.id,
-        title: newHabitTitle,
+        name: newHabitTitle,
         icon: newHabitIcon,
       });
 
@@ -215,13 +215,13 @@ const Habits = () => {
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="text-5xl animate-pulse-glow">{habit.icon}</div>
+                      <div className="text-5xl animate-pulse-glow">{habit.icon || '🎯'}</div>
                       <div>
-                        <CardTitle className="text-xl mb-1">{habit.title}</CardTitle>
+                        <CardTitle className="text-xl mb-1">{habit.name}</CardTitle>
                         <CardDescription className="flex items-center gap-2">
                           <Flame className="w-5 h-5 text-orange-500 animate-bounce" />
                           <span className="font-bold text-xl text-orange-500">
-                            {habit.current_streak}
+                            {habit.streak_count ?? 0}
                           </span>
                           <span className="text-sm">{t('habits.days')}</span>
                         </CardDescription>
@@ -235,7 +235,7 @@ const Habits = () => {
                       {t('habits.bestStreak')}
                     </span>
                     <span className="font-bold text-lg flex items-center gap-1">
-                      <span className="text-primary">{habit.best_streak}</span>
+                      <span className="text-primary">{habit.best_streak ?? 0}</span>
                       {t('habits.days')}
                     </span>
                   </div>
